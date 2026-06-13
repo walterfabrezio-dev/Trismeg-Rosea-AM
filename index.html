@@ -1,0 +1,1736 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trismeg Rosea - Art Gallery</title>
+    <style>
+        :root {
+            --bg-primary: #1a1a2e;
+            --text-primary: #e0e0e0;
+            --accent: #c9a96e;
+            --secondary: #16213e;
+            --card-bg: #0f3460;
+            --price-color: #e94560;
+            --border: #c9a96e;
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            --transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Cormorant Garamond', 'Georgia', 'Noto Serif SC', serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            transition: var(--transition);
+        }
+
+        /* 语言选择器 */
+        .language-selector {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 3000;
+            background: rgba(26, 26, 46, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--accent);
+            padding: 0.5rem;
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .lang-btn {
+            background: transparent;
+            border: 1px solid transparent;
+            color: var(--text-primary);
+            padding: 0.3rem 0.6rem;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.8rem;
+            transition: var(--transition);
+            letter-spacing: 0.05em;
+        }
+
+        .lang-btn:hover, .lang-btn.active {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        /* 密码保护层 */
+        .password-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-primary);
+            z-index: 4000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .password-form {
+            text-align: center;
+            padding: 3rem;
+            border: 1px solid var(--accent);
+            background: rgba(15, 52, 96, 0.5);
+            backdrop-filter: blur(10px);
+        }
+
+        .password-form h2 {
+            color: var(--accent);
+            margin-bottom: 2rem;
+            letter-spacing: 0.3em;
+            font-weight: 300;
+        }
+
+        .password-input {
+            background: transparent;
+            border: 1px solid var(--accent);
+            padding: 0.8rem 1.5rem;
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 1.2rem;
+            text-align: center;
+            letter-spacing: 0.2em;
+            margin-bottom: 1rem;
+            width: 250px;
+        }
+
+        .password-submit {
+            background: var(--accent);
+            color: var(--bg-primary);
+            border: none;
+            padding: 0.8rem 2rem;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 1rem;
+            letter-spacing: 0.2em;
+            transition: var(--transition);
+            display: block;
+            width: 250px;
+            margin: 0 auto;
+        }
+
+        .password-submit:hover {
+            background: #b8944f;
+        }
+
+        .password-error {
+            color: var(--price-color);
+            margin-top: 1rem;
+            display: none;
+        }
+
+        /* 首页 - 两个入口 */
+        .landing-page {
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #0a0a0a 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .landing-page::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 1px;
+            height: 70%;
+            background: var(--accent);
+            transform: translate(-50%, -50%);
+            opacity: 0.3;
+        }
+
+        .portal-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .portal {
+            cursor: pointer;
+            transition: var(--transition);
+            padding: 3rem 4rem;
+            text-align: center;
+            position: relative;
+            background: transparent;
+            border: 2px solid transparent;
+        }
+
+        .portal:hover {
+            transform: scale(1.1);
+            border-color: var(--accent);
+            background: rgba(201, 169, 110, 0.05);
+            box-shadow: 0 0 50px rgba(201, 169, 110, 0.2);
+        }
+
+        .portal h1 {
+            font-size: 3.5rem;
+            font-weight: 300;
+            letter-spacing: 0.3em;
+            color: var(--text-primary);
+            transition: var(--transition);
+            margin: 0;
+            text-transform: uppercase;
+        }
+
+        .portal:hover h1 {
+            color: var(--accent);
+            letter-spacing: 0.5em;
+        }
+
+        .portal-subtitle {
+            font-size: 0.9rem;
+            color: var(--accent);
+            margin-top: 1rem;
+            opacity: 0;
+            transition: var(--transition);
+            letter-spacing: 0.2em;
+        }
+
+        .portal:hover .portal-subtitle {
+            opacity: 1;
+        }
+
+        /* 导航栏 */
+        .navbar {
+            background: rgba(26, 26, 46, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 3rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid var(--border);
+            display: none;
+        }
+
+        .navbar.active {
+            display: flex;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            letter-spacing: 0.2em;
+            color: var(--accent);
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-btn {
+            color: var(--text-primary);
+            text-decoration: none;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 1rem;
+            padding: 0.5rem 1rem;
+            transition: var(--transition);
+            letter-spacing: 0.1em;
+        }
+
+        .nav-btn:hover {
+            color: var(--accent);
+        }
+
+        .admin-nav-btn {
+            border: 1px solid var(--accent);
+            padding: 0.5rem 1.5rem;
+        }
+
+        /* 主容器 */
+        .main-container {
+            display: none;
+            min-height: 100vh;
+        }
+
+        .main-container.active {
+            display: block;
+        }
+
+        /* 个人页面 */
+        .personal-page {
+            display: none;
+            padding: 4rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            animation: fadeIn 1s ease;
+        }
+
+        .personal-page.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .artist-profile {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .artist-name {
+            font-size: 4rem;
+            font-weight: 300;
+            letter-spacing: 0.3em;
+            color: var(--accent);
+            margin-bottom: 1rem;
+        }
+
+        .artist-bio {
+            font-size: 1.2rem;
+            line-height: 2;
+            max-width: 800px;
+            margin: 0 auto;
+            color: var(--text-primary);
+        }
+
+        .artist-statement {
+            margin: 4rem 0;
+            padding: 3rem;
+            border: 1px solid var(--border);
+            background: rgba(201, 169, 110, 0.05);
+        }
+
+        .artist-statement h3 {
+            color: var(--accent);
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+            letter-spacing: 0.2em;
+        }
+
+        /* 画廊容器 */
+        .gallery-container {
+            display: none;
+            padding: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .gallery-container.active {
+            display: block;
+        }
+
+        /* 筛选栏 */
+        .filter-bar {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filter-bar select, .filter-bar input {
+            padding: 0.7rem 1.2rem;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 1rem;
+        }
+
+        /* 画作网格 */
+        .artworks-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 2rem;
+        }
+
+        .artwork-card {
+            background: var(--card-bg);
+            border: 1px solid transparent;
+            overflow: hidden;
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        .artwork-card:hover {
+            border-color: var(--accent);
+            box-shadow: var(--shadow);
+            transform: translateY(-5px);
+        }
+
+        .artwork-image {
+            width: 100%;
+            height: 400px;
+            object-fit: cover;
+            transition: var(--transition);
+        }
+
+        .artwork-card:hover .artwork-image {
+            transform: scale(1.05);
+        }
+
+        .artwork-info {
+            padding: 1.5rem;
+        }
+
+        .artwork-title {
+            font-size: 1.5rem;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+            letter-spacing: 0.1em;
+        }
+
+        .artwork-meta {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+            margin: 1rem 0;
+            font-size: 0.9rem;
+        }
+
+        .artwork-meta-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .artwork-meta-label {
+            color: var(--accent);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .artwork-meta-value {
+            color: var(--text-primary);
+            font-size: 1rem;
+        }
+
+        .artwork-price {
+            font-size: 1.8rem;
+            color: var(--price-color);
+            font-weight: bold;
+            margin: 1rem 0;
+        }
+
+        .buy-btn, .inquiry-btn {
+            width: 100%;
+            padding: 0.8rem;
+            margin-top: 0.5rem;
+            border: none;
+            font-family: inherit;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: var(--transition);
+            letter-spacing: 0.1em;
+        }
+
+        .buy-btn {
+            background: var(--accent);
+            color: var(--bg-primary);
+        }
+
+        .buy-btn:hover {
+            background: #b8944f;
+        }
+
+        .inquiry-btn {
+            background: transparent;
+            border: 1px solid var(--accent);
+            color: var(--accent);
+        }
+
+        .inquiry-btn:hover {
+            background: var(--accent);
+            color: var(--bg-primary);
+        }
+
+        /* 管理面板 */
+        .admin-panel {
+            display: none;
+            background: var(--card-bg);
+            padding: 2rem;
+            margin: 2rem 0;
+        }
+
+        .admin-panel.active {
+            display: block;
+        }
+
+        .admin-auth {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .admin-auth input {
+            background: transparent;
+            border: 1px solid var(--accent);
+            padding: 0.8rem;
+            color: var(--text-primary);
+            font-family: inherit;
+            margin: 0.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            font-size: 0.9rem;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 0.8rem;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 1rem;
+        }
+
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .file-upload {
+            border: 2px dashed var(--border);
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .file-upload:hover {
+            background: rgba(201, 169, 110, 0.1);
+        }
+
+        .file-upload input[type="file"] {
+            display: none;
+        }
+
+        .image-preview {
+            max-width: 300px;
+            margin-top: 1rem;
+        }
+
+        .action-btn {
+            padding: 0.8rem 2rem;
+            border: none;
+            font-family: inherit;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: var(--transition);
+            letter-spacing: 0.1em;
+            margin-right: 1rem;
+        }
+
+        .save-btn {
+            background: var(--accent);
+            color: var(--bg-primary);
+        }
+
+        .save-btn:hover {
+            background: #b8944f;
+        }
+
+        .cancel-btn {
+            background: transparent;
+            border: 1px solid var(--accent);
+            color: var(--accent);
+        }
+
+        .cancel-btn:hover {
+            background: var(--accent);
+            color: var(--bg-primary);
+        }
+
+        /* 主题定制 */
+        .theme-customizer {
+            display: none;
+            background: var(--card-bg);
+            padding: 2rem;
+            margin: 2rem 0;
+        }
+
+        .theme-customizer.active {
+            display: block;
+        }
+
+        .color-picker-group {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .color-picker {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .color-picker input[type="color"] {
+            width: 60px;
+            height: 60px;
+            border: 2px solid var(--border);
+            cursor: pointer;
+            background: none;
+            padding: 0;
+        }
+
+        /* 弹窗 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            padding: 2rem;
+            max-width: 900px;
+            width: 95%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .close-btn {
+            float: right;
+            font-size: 2rem;
+            cursor: pointer;
+            color: var(--accent);
+            background: none;
+            border: none;
+        }
+
+        /* 页脚 */
+        .footer {
+            text-align: center;
+            padding: 3rem;
+            border-top: 1px solid var(--border);
+            margin-top: 4rem;
+            display: none;
+        }
+
+        .footer.active {
+            display: block;
+        }
+
+        .copyright {
+            color: var(--accent);
+            letter-spacing: 0.2em;
+            font-size: 0.9rem;
+        }
+
+        .logout-btn {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(26, 26, 46, 0.8);
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.8rem;
+            z-index: 3000;
+            letter-spacing: 0.1em;
+        }
+
+        @media (max-width: 768px) {
+            .portal-container {
+                flex-direction: column;
+                gap: 3rem;
+            }
+            
+            .portal h1 {
+                font-size: 2rem;
+            }
+            
+            .artworks-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .artist-name {
+                font-size: 2.5rem;
+            }
+            
+            .language-selector {
+                top: 10px;
+                right: 10px;
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 管理员密码保护 -->
+    <div id="passwordOverlay" class="password-overlay" style="display: none;">
+        <div class="password-form">
+            <h2 id="passwordTitle">Administrator Access</h2>
+            <input type="password" id="adminPassword" class="password-input" placeholder="Enter Password">
+            <button class="password-submit" onclick="verifyAdmin()">Access</button>
+            <p id="passwordError" class="password-error">Incorrect password</p>
+            <button class="password-submit" style="background: transparent; border: 1px solid var(--accent); color: var(--accent); margin-top: 1rem;" onclick="closePasswordOverlay()">Cancel</button>
+        </div>
+    </div>
+
+    <!-- 语言选择器 -->
+    <div class="language-selector">
+        <button class="lang-btn active" onclick="changeLanguage('zh')" data-lang="zh">中文</button>
+        <button class="lang-btn" onclick="changeLanguage('en')" data-lang="en">English</button>
+        <button class="lang-btn" onclick="changeLanguage('fr')" data-lang="fr">Français</button>
+        <button class="lang-btn" onclick="changeLanguage('it')" data-lang="it">Italiano</button>
+        <button class="lang-btn" onclick="changeLanguage('de')" data-lang="de">Deutsch</button>
+    </div>
+
+    <!-- 登出按钮（仅管理员可见） -->
+    <button id="logoutBtn" class="logout-btn" style="display: none;" onclick="logout()">Logout / 登出</button>
+
+    <!-- 首页入口 -->
+    <div id="landingPage" class="landing-page">
+        <div class="portal-container">
+            <div class="portal" onclick="showPersonal()">
+                <h1>Macroprosopus</h1>
+                <div class="portal-subtitle" data-i18n="portal1_subtitle">藝術家簡介</div>
+            </div>
+            <div class="portal" onclick="showGallery()">
+                <h1>Microprosopus</h1>
+                <div class="portal-subtitle" data-i18n="portal2_subtitle">畫作售賣</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 导航栏 -->
+    <nav id="navbar" class="navbar">
+        <a class="logo" onclick="showLanding()">T·R</a>
+        <div class="nav-links">
+            <button class="nav-btn" onclick="showPersonal()" data-i18n="nav_macro">Macroprosopus</button>
+            <button class="nav-btn" onclick="showGallery()" data-i18n="nav_micro">Microprosopus</button>
+            <button class="nav-btn admin-nav-btn" onclick="openAdminPanel()" data-i18n="nav_admin">管理</button>
+            <button class="nav-btn" onclick="toggleTheme()" data-i18n="nav_theme">主題</button>
+        </div>
+    </nav>
+
+    <!-- 主要内容区域 -->
+    <div id="mainContainer" class="main-container">
+        <!-- 个人页面 -->
+        <div id="personalPage" class="personal-page">
+            <div class="artist-profile">
+                <h1 class="artist-name">Trismeg Rosea</h1>
+                <div class="artist-bio">
+                    <p data-i18n="artist_bio">探索意識與存在的邊界，以畫筆描繪不可見的世界。</p>
+                    <p data-i18n="artist_bio2">每一幅作品都是對宏觀與微觀宇宙的沉思。</p>
+                </div>
+            </div>
+            <div class="artist-statement">
+                <h3 data-i18n="artist_statement_title">藝術家自述</h3>
+                <p data-i18n="artist_statement">在我的創作中，Macroprosopus代表著宏大的宇宙視角，而Microprosopus則聚焦於微觀的細節世界。兩者相互映照，構成了我對藝術與存在的理解。</p>
+                <p data-i18n="artist_statement2">每一筆觸都是對生命本質的探索，每一幅畫作都是一次意識的旅程。</p>
+            </div>
+        </div>
+
+        <!-- 画廊页面 -->
+        <div id="galleryPage" class="gallery-container">
+            <!-- 主题定制面板 -->
+            <div id="themeCustomizer" class="theme-customizer">
+                <h3 style="color: var(--accent); margin-bottom: 1.5rem;" data-i18n="theme_title">主題自訂</h3>
+                <div class="form-group">
+                    <label data-i18n="theme_colors">配色方案</label>
+                    <div class="color-picker-group">
+                        <div class="color-picker">
+                            <input type="color" id="bgPrimary" value="#1a1a2e" onchange="updateTheme()">
+                            <span data-i18n="theme_bg">背景色</span>
+                        </div>
+                        <div class="color-picker">
+                            <input type="color" id="accentColor" value="#c9a96e" onchange="updateTheme()">
+                            <span data-i18n="theme_accent">強調色</span>
+                        </div>
+                        <div class="color-picker">
+                            <input type="color" id="cardBg" value="#0f3460" onchange="updateTheme()">
+                            <span data-i18n="theme_card">卡片背景</span>
+                        </div>
+                        <div class="color-picker">
+                            <input type="color" id="textColor" value="#e0e0e0" onchange="updateTheme()">
+                            <span data-i18n="theme_text">文字色</span>
+                        </div>
+                    </div>
+                </div>
+                <button class="action-btn save-btn" onclick="saveTheme()" data-i18n="theme_save">儲存主題</button>
+                <button class="action-btn cancel-btn" onclick="toggleTheme()" data-i18n="theme_close">關閉</button>
+            </div>
+
+            <!-- 管理面板 -->
+            <div id="adminPanel" class="admin-panel">
+                <div id="adminAuth" class="admin-auth">
+                    <h3 style="color: var(--accent); margin-bottom: 1.5rem;" data-i18n="admin_login_title">管理員登入</h3>
+                    <input type="password" id="adminLoginPassword" placeholder="請輸入管理密碼" data-i18n-placeholder="admin_password_placeholder">
+                    <button class="action-btn save-btn" onclick="adminLogin()" data-i18n="admin_login_btn">登入</button>
+                    <p id="adminLoginError" style="color: var(--price-color); display: none;" data-i18n="admin_login_error">密碼錯誤</p>
+                </div>
+                
+                <div id="adminContent" style="display: none;">
+                    <h3 style="color: var(--accent); margin-bottom: 1.5rem;" data-i18n="admin_title">畫作管理</h3>
+                    <button class="action-btn save-btn" onclick="showAddForm()" style="margin-bottom: 1rem;" data-i18n="admin_add">+ 新增畫作</button>
+                    
+                    <div id="artworkForm" style="display: none;">
+                        <input type="hidden" id="artworkId">
+                        
+                        <div class="form-group">
+                            <label data-i18n="form_title">畫作名稱</label>
+                            <input type="text" id="artworkTitle" data-i18n-placeholder="form_title_placeholder">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label data-i18n="form_type">畫作類型</label>
+                            <select id="artworkType">
+                                <option value="油畫" data-i18n="type_oil">油畫</option>
+                                <option value="水彩" data-i18n="type_watercolor">水彩</option>
+                                <option value="素描" data-i18n="type_sketch">素描</option>
+                                <option value="丙烯" data-i18n="type_acrylic">丙烯</option>
+                                <option value="數字藝術" data-i18n="type_digital">數字藝術</option>
+                                <option value="混合媒材" data-i18n="type_mixed">混合媒材</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label data-i18n="form_character">畫作中的角色</label>
+                            <input type="text" id="artworkCharacter" data-i18n-placeholder="form_character_placeholder">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label data-i18n="form_price">價格 (HK$)</label>
+                            <input type="number" id="artworkPrice" placeholder="0.00" step="0.01">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label data-i18n="form_image">上傳圖片</label>
+                            <div class="file-upload" onclick="document.getElementById('fileInput').click()">
+                                <p data-i18n="form_upload_text">點擊上傳圖片或拖拽至此</p>
+                                <p style="font-size: 0.8rem; color: var(--accent);" data-i18n="form_upload_format">支援 JPG、PNG、WebP 格式</p>
+                                <input type="file" id="fileInput" accept="image/*" onchange="handleFileUpload(event)">
+                            </div>
+                            <img id="imagePreview" class="image-preview" style="display: none;">
+                            <input type="hidden" id="artworkImage" value="">
+                        </div>
+                        
+                        <button class="action-btn save-btn" onclick="saveArtwork()" data-i18n="form_save">儲存畫作</button>
+                        <button class="action-btn cancel-btn" onclick="cancelForm()" data-i18n="form_cancel">取消</button>
+                    </div>
+                    
+                    <div id="artworkList" style="margin-top: 2rem;"></div>
+                </div>
+            </div>
+
+            <!-- 筛选栏 -->
+            <div class="filter-bar">
+                <select id="typeFilter" onchange="filterArtworks()">
+                    <option value="all" data-i18n="filter_all">所有類型</option>
+                </select>
+                <input type="text" id="searchInput" data-i18n-placeholder="filter_search" oninput="filterArtworks()">
+            </div>
+
+            <!-- 画作展示 -->
+            <div id="artworksGrid" class="artworks-grid"></div>
+        </div>
+    </div>
+
+    <!-- 画作详情弹窗 -->
+    <div id="artworkModal" class="modal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeModal()">&times;</button>
+            <div id="modalContent"></div>
+        </div>
+    </div>
+
+    <!-- 页脚 -->
+    <footer id="footer" class="footer">
+        <p class="copyright">&copy; 2024 T·R·AM. All rights reserved.</p>
+    </footer>
+
+    <script>
+        // ===== 配置 =====
+        const ADMIN_PASSWORD = 'Trismeg2024!'; // 请更改为您的密码
+        
+        const ARTIST_INFO = {
+            name: 'Trismeg Rosea',
+            copyright: 'T·R·AM'
+        };
+
+        // ===== 多语言翻译 =====
+        const translations = {
+            zh: {
+                portal1_subtitle: '藝術家簡介',
+                portal2_subtitle: '畫作售賣',
+                nav_macro: 'Macroprosopus',
+                nav_micro: 'Microprosopus',
+                nav_admin: '管理',
+                nav_theme: '主題',
+                artist_bio: '探索意識與存在的邊界，以畫筆描繪不可見的世界。',
+                artist_bio2: '每一幅作品都是對宏觀與微觀宇宙的沉思。',
+                artist_statement_title: '藝術家自述',
+                artist_statement: '在我的創作中，Macroprosopus代表著宏大的宇宙視角，而Microprosopus則聚焦於微觀的細節世界。兩者相互映照，構成了我對藝術與存在的理解。',
+                artist_statement2: '每一筆觸都是對生命本質的探索，每一幅畫作都是一次意識的旅程。',
+                theme_title: '主題自訂',
+                theme_colors: '配色方案',
+                theme_bg: '背景色',
+                theme_accent: '強調色',
+                theme_card: '卡片背景',
+                theme_text: '文字色',
+                theme_save: '儲存主題',
+                theme_close: '關閉',
+                admin_login_title: '管理員登入',
+                admin_password_placeholder: '請輸入管理密碼',
+                admin_login_btn: '登入',
+                admin_login_error: '密碼錯誤',
+                admin_title: '畫作管理',
+                admin_add: '+ 新增畫作',
+                form_title: '畫作名稱',
+                form_title_placeholder: '請輸入畫作名稱',
+                form_type: '畫作類型',
+                form_character: '畫作中的角色',
+                form_character_placeholder: '請輸入角色名稱',
+                form_price: '價格 (HK$)',
+                form_image: '上傳圖片',
+                form_upload_text: '點擊上傳圖片或拖拽至此',
+                form_upload_format: '支援 JPG、PNG、WebP 格式',
+                form_save: '儲存畫作',
+                form_cancel: '取消',
+                filter_all: '所有類型',
+                filter_search: '搜尋畫作...',
+                type_oil: '油畫',
+                type_watercolor: '水彩',
+                type_sketch: '素描',
+                type_acrylic: '丙烯',
+                type_digital: '數字藝術',
+                type_mixed: '混合媒材',
+                buy_btn: '立即購買',
+                inquiry_btn: '諮詢詳情',
+                modal_author: '作者',
+                modal_type: '類型',
+                modal_character: '角色',
+                modal_price: '價格',
+                buy_alert_title: '感謝您的購買意向！',
+                buy_alert_message: '我們將盡快通過電郵與您聯繫。',
+                inquiry_alert_title: '諮詢詳情',
+                inquiry_alert_message: '請發送電郵至：trismeg.rosea@art.com',
+                no_artworks: '暫無畫作展示'
+            },
+            en: {
+                portal1_subtitle: 'Artist Profile',
+                portal2_subtitle: 'Artwork Sales',
+                nav_macro: 'Macroprosopus',
+                nav_micro: 'Microprosopus',
+                nav_admin: 'Admin',
+                nav_theme: 'Theme',
+                artist_bio: 'Exploring the boundaries of consciousness and existence, depicting the invisible world with brushstrokes.',
+                artist_bio2: 'Each artwork is a meditation on the macrocosm and microcosm.',
+                artist_statement_title: 'Artist Statement',
+                artist_statement: 'In my creation, Macroprosopus represents the grand cosmic perspective, while Microprosopus focuses on the microscopic world of details. The two reflect each other, constituting my understanding of art and existence.',
+                artist_statement2: 'Every brushstroke is an exploration of the essence of life, every painting is a journey of consciousness.',
+                theme_title: 'Customize Theme',
+                theme_colors: 'Color Scheme',
+                theme_bg: 'Background',
+                theme_accent: 'Accent',
+                theme_card: 'Card Background',
+                theme_text: 'Text Color',
+                theme_save: 'Save Theme',
+                theme_close: 'Close',
+                admin_login_title: 'Admin Login',
+                admin_password_placeholder: 'Enter admin password',
+                admin_login_btn: 'Login',
+                admin_login_error: 'Incorrect password',
+                admin_title: 'Artwork Management',
+                admin_add: '+ Add Artwork',
+                form_title: 'Artwork Title',
+                form_title_placeholder: 'Enter artwork title',
+                form_type: 'Artwork Type',
+                form_character: 'Character in Artwork',
+                form_character_placeholder: 'Enter character name',
+                form_price: 'Price (HK$)',
+                form_image: 'Upload Image',
+                form_upload_text: 'Click to upload or drag here',
+                form_upload_format: 'Supports JPG, PNG, WebP',
+                form_save: 'Save Artwork',
+                form_cancel: 'Cancel',
+                filter_all: 'All Types',
+                filter_search: 'Search artworks...',
+                type_oil: 'Oil Painting',
+                type_watercolor: 'Watercolor',
+                type_sketch: 'Sketch',
+                type_acrylic: 'Acrylic',
+                type_digital: 'Digital Art',
+                type_mixed: 'Mixed Media',
+                buy_btn: 'Buy Now',
+                inquiry_btn: 'Inquire',
+                modal_author: 'Author',
+                modal_type: 'Type',
+                modal_character: 'Character',
+                modal_price: 'Price',
+                buy_alert_title: 'Thank you for your interest!',
+                buy_alert_message: 'We will contact you via email shortly.',
+                inquiry_alert_title: 'Inquiry Details',
+                inquiry_alert_message: 'Please email: trismeg.rosea@art.com',
+                no_artworks: 'No artworks available'
+            },
+            fr: {
+                portal1_subtitle: 'Profil de l\'Artiste',
+                portal2_subtitle: 'Ventes d\'Œuvres',
+                nav_macro: 'Macroprosopus',
+                nav_micro: 'Microprosopus',
+                nav_admin: 'Admin',
+                nav_theme: 'Thème',
+                artist_bio: 'Explorer les frontières de la conscience et de l\'existence, dépeindre le monde invisible par le pinceau.',
+                artist_bio2: 'Chaque œuvre est une méditation sur le macrocosme et le microcosme.',
+                artist_statement_title: 'Déclaration de l\'Artiste',
+                artist_statement: 'Dans ma création, Macroprosopus représente la perspective cosmique grandiose, tandis que Microprosopus se concentre sur le monde microscopique des détails.',
+                artist_statement2: 'Chaque coup de pinceau est une exploration de l\'essence de la vie.',
+                theme_title: 'Personnaliser le Thème',
+                theme_colors: 'Schéma de Couleurs',
+                theme_bg: 'Fond',
+                theme_accent: 'Accent',
+                theme_card: 'Fond de Carte',
+                theme_text: 'Couleur du Texte',
+                theme_save: 'Enregistrer',
+                theme_close: 'Fermer',
+                admin_login_title: 'Connexion Admin',
+                admin_password_placeholder: 'Mot de passe admin',
+                admin_login_btn: 'Connexion',
+                admin_login_error: 'Mot de passe incorrect',
+                admin_title: 'Gestion des Œuvres',
+                admin_add: '+ Ajouter',
+                form_title: 'Titre',
+                form_title_placeholder: 'Entrez le titre',
+                form_type: 'Type d\'Œuvre',
+                form_character: 'Personnage',
+                form_character_placeholder: 'Nom du personnage',
+                form_price: 'Prix (HK$)',
+                form_image: 'Télécharger l\'Image',
+                form_upload_text: 'Cliquez pour télécharger',
+                form_upload_format: 'Formats: JPG, PNG, WebP',
+                form_save: 'Enregistrer',
+                form_cancel: 'Annuler',
+                filter_all: 'Tous les Types',
+                filter_search: 'Rechercher...',
+                type_oil: 'Peinture à l\'Huile',
+                type_watercolor: 'Aquarelle',
+                type_sketch: 'Esquisse',
+                type_acrylic: 'Acrylique',
+                type_digital: 'Art Numérique',
+                type_mixed: 'Médias Mixtes',
+                buy_btn: 'Acheter',
+                inquiry_btn: 'Demander',
+                modal_author: 'Auteur',
+                modal_type: 'Type',
+                modal_character: 'Personnage',
+                modal_price: 'Prix',
+                buy_alert_title: 'Merci de votre intérêt!',
+                buy_alert_message: 'Nous vous contacterons par email.',
+                inquiry_alert_title: 'Détails',
+                inquiry_alert_message: 'Email: trismeg.rosea@art.com',
+                no_artworks: 'Aucune œuvre disponible'
+            },
+            it: {
+                portal1_subtitle: 'Profilo Artista',
+                portal2_subtitle: 'Vendita Opere',
+                nav_macro: 'Macroprosopus',
+                nav_micro: 'Microprosopus',
+                nav_admin: 'Admin',
+                nav_theme: 'Tema',
+                artist_bio: 'Esplorare i confini della coscienza e dell\'esistenza, dipingendo il mondo invisibile.',
+                artist_bio2: 'Ogni opera è una meditazione sul macrocosmo e microcosmo.',
+                artist_statement_title: 'Dichiarazione dell\'Artista',
+                artist_statement: 'Nella mia creazione, Macroprosopus rappresenta la prospettiva cosmica, mentre Microprosopus si concentra sul mondo microscopico.',
+                artist_statement2: 'Ogni pennellata è un\'esplorazione dell\'essenza della vita.',
+                theme_title: 'Personalizza Tema',
+                theme_colors: 'Schema Colori',
+                theme_bg: 'Sfondo',
+                theme_accent: 'Accento',
+                theme_card: 'Sfondo Scheda',
+                theme_text: 'Colore Testo',
+                theme_save: 'Salva',
+                theme_close: 'Chiudi',
+                admin_login_title: 'Accesso Admin',
+                admin_password_placeholder: 'Password admin',
+                admin_login_btn: 'Accedi',
+                admin_login_error: 'Password errata',
+                admin_title: 'Gestione Opere',
+                admin_add: '+ Aggiungi',
+                form_title: 'Titolo',
+                form_title_placeholder: 'Inserisci titolo',
+                form_type: 'Tipo Opera',
+                form_character: 'Personaggio',
+                form_character_placeholder: 'Nome personaggio',
+                form_price: 'Prezzo (HK$)',
+                form_image: 'Carica Immagine',
+                form_upload_text: 'Clicca per caricare',
+                form_upload_format: 'Formati: JPG, PNG, WebP',
+                form_save: 'Salva',
+                form_cancel: 'Annulla',
+                filter_all: 'Tutti i Tipi',
+                filter_search: 'Cerca...',
+                type_oil: 'Pittura a Olio',
+                type_watercolor: 'Acquerello',
+                type_sketch: 'Schizzo',
+                type_acrylic: 'Acrilico',
+                type_digital: 'Arte Digitale',
+                type_mixed: 'Tecnica Mista',
+                buy_btn: 'Acquista',
+                inquiry_btn: 'Info',
+                modal_author: 'Autore',
+                modal_type: 'Tipo',
+                modal_character: 'Personaggio',
+                modal_price: 'Prezzo',
+                buy_alert_title: 'Grazie per l\'interesse!',
+                buy_alert_message: 'Ti contatteremo via email.',
+                inquiry_alert_title: 'Dettagli',
+                inquiry_alert_message: 'Email: trismeg.rosea@art.com',
+                no_artworks: 'Nessuna opera disponibile'
+            },
+            de: {
+                portal1_subtitle: 'Künstlerprofil',
+                portal2_subtitle: 'Kunstverkauf',
+                nav_macro: 'Macroprosopus',
+                nav_micro: 'Microprosopus',
+                nav_admin: 'Admin',
+                nav_theme: 'Thema',
+                artist_bio: 'Die Grenzen des Bewusstseins und der Existenz erforschen, die unsichtbare Welt mit Pinselstrichen darstellen.',
+                artist_bio2: 'Jedes Kunstwerk ist eine Meditation über Makrokosmos und Mikrokosmos.',
+                artist_statement_title: 'Künstlerstatement',
+                artist_statement: 'In meiner Arbeit steht Macroprosopus für die große kosmische Perspektive, während Microprosopus sich auf die mikroskopische Welt der Details konzentriert.',
+                artist_statement2: 'Jeder Pinselstrich ist eine Erforschung des Wesens des Lebens.',
+                theme_title: 'Thema anpassen',
+                theme_colors: 'Farbschema',
+                theme_bg: 'Hintergrund',
+                theme_accent: 'Akzent',
+                theme_card: 'Kartenhintergrund',
+                theme_text: 'Textfarbe',
+                theme_save: 'Speichern',
+                theme_close: 'Schließen',
+                admin_login_title: 'Admin Login',
+                admin_password_placeholder: 'Admin-Passwort',
+                admin_login_btn: 'Anmelden',
+                admin_login_error: 'Falsches Passwort',
+                admin_title: 'Kunstverwaltung',
+                admin_add: '+ Hinzufügen',
+                form_title: 'Titel',
+                form_title_placeholder: 'Titel eingeben',
+                form_type: 'Kunsttyp',
+                form_character: 'Charakter',
+                form_character_placeholder: 'Charaktername',
+                form_price: 'Preis (HK$)',
+                form_image: 'Bild hochladen',
+                form_upload_text: 'Klicken zum Hochladen',
+                form_upload_format: 'Formate: JPG, PNG, WebP',
+                form_save: 'Speichern',
+                form_cancel: 'Abbrechen',
+                filter_all: 'Alle Typen',
+                filter_search: 'Suchen...',
+                type_oil: 'Ölgemälde',
+                type_watercolor: 'Aquarell',
+                type_sketch: 'Skizze',
+                type_acrylic: 'Acryl',
+                type_digital: 'Digitale Kunst',
+                type_mixed: 'Mischtechnik',
+                buy_btn: 'Kaufen',
+                inquiry_btn: 'Anfragen',
+                modal_author: 'Autor',
+                modal_type: 'Typ',
+                modal_character: 'Charakter',
+                modal_price: 'Preis',
+                buy_alert_title: 'Vielen Dank für Ihr Interesse!',
+                buy_alert_message: 'Wir werden Sie per E-Mail kontaktieren.',
+                inquiry_alert_title: 'Anfragedetails',
+                inquiry_alert_message: 'E-Mail: trismeg.rosea@art.com',
+                no_artworks: 'Keine Kunstwerke verfügbar'
+            }
+        };
+
+        // ===== 状态管理 =====
+        let currentLanguage = localStorage.getItem('tr_language') || 'zh';
+        let artworks = JSON.parse(localStorage.getItem('tr_artworks')) || [];
+        let currentTheme = JSON.parse(localStorage.getItem('tr_theme')) || {
+            bgPrimary: '#1a1a2e',
+            accentColor: '#c9a96e',
+            cardBg: '#0f3460',
+            textColor: '#e0e0e0'
+        };
+        let isAdmin = false;
+        let adminSessionTimeout = null;
+
+        // ===== 管理员密码保护 =====
+        function openAdminPanel() {
+            document.getElementById('adminPanel').classList.add('active');
+            if (!isAdmin) {
+                document.getElementById('adminAuth').style.display = 'block';
+                document.getElementById('adminContent').style.display = 'none';
+            } else {
+                document.getElementById('adminAuth').style.display = 'none';
+                document.getElementById('adminContent').style.display = 'block';
+                updateAdminList();
+            }
+        }
+
+        function adminLogin() {
+            const password = document.getElementById('adminLoginPassword').value;
+            if (password === ADMIN_PASSWORD) {
+                isAdmin = true;
+                document.getElementById('adminAuth').style.display = 'none';
+                document.getElementById('adminContent').style.display = 'block';
+                document.getElementById('adminLoginError').style.display = 'none';
+                document.getElementById('logoutBtn').style.display = 'block';
+                updateAdminList();
+                
+                // 设置30分钟超时自动登出
+                clearTimeout(adminSessionTimeout);
+                adminSessionTimeout = setTimeout(() => {
+                    logout();
+                    alert('管理員會話已過期，請重新登入。');
+                }, 30 * 60 * 1000);
+            } else {
+                document.getElementById('adminLoginError').style.display = 'block';
+            }
+        }
+
+        function verifyAdmin() {
+            const password = document.getElementById('adminPassword').value;
+            if (password === ADMIN_PASSWORD) {
+                isAdmin = true;
+                document.getElementById('passwordOverlay').style.display = 'none';
+                document.getElementById('logoutBtn').style.display = 'block';
+                
+                clearTimeout(adminSessionTimeout);
+                adminSessionTimeout = setTimeout(() => {
+                    logout();
+                    alert('管理員會話已過期，請重新登入。');
+                }, 30 * 60 * 1000);
+            } else {
+                document.getElementById('passwordError').style.display = 'block';
+            }
+        }
+
+        function closePasswordOverlay() {
+            document.getElementById('passwordOverlay').style.display = 'none';
+            showLanding();
+        }
+
+        function logout() {
+            isAdmin = false;
+            document.getElementById('adminAuth').style.display = 'block';
+            document.getElementById('adminContent').style.display = 'none';
+            document.getElementById('adminLoginPassword').value = '';
+            document.getElementById('logoutBtn').style.display = 'none';
+            document.getElementById('adminPanel').classList.remove('active');
+            clearTimeout(adminSessionTimeout);
+            showLanding();
+        }
+
+        // ===== 多语言切换 =====
+        function changeLanguage(lang) {
+            currentLanguage = lang;
+            localStorage.setItem('tr_language', lang);
+            
+            // 更新语言按钮状态
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.lang === lang) btn.classList.add('active');
+            });
+            
+            // 更新所有带 data-i18n 属性的元素
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.dataset.i18n;
+                if (translations[lang] && translations[lang][key]) {
+                    if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+                        el.placeholder = translations[lang][key];
+                    } else if (el.tagName === 'OPTION') {
+                        el.textContent = translations[lang][key];
+                    } else {
+                        el.textContent = translations[lang][key];
+                    }
+                }
+            });
+            
+            // 更新筛选下拉框
+            updateFilterOptions();
+            
+            // 更新画作显示
+            if (document.getElementById('galleryPage').classList.contains('active')) {
+                displayArtworks();
+            }
+            
+            // 更新管理员密码弹窗
+            updatePasswordOverlayLanguage();
+        }
+
+        function updateFilterOptions() {
+            const filter = document.getElementById('typeFilter');
+            const types = ['all', '油畫', '水彩', '素描', '丙烯', '數字藝術', '混合媒材'];
+            const typeKeys = ['filter_all', 'type_oil', 'type_watercolor', 'type_sketch', 'type_acrylic', 'type_digital', 'type_mixed'];
+            
+            filter.innerHTML = '';
+            types.forEach((type, index) => {
+                const option = document.createElement('option');
+                option.value = type;
+                option.textContent = translations[currentLanguage][typeKeys[index]] || type;
+                filter.appendChild(option);
+            });
+        }
+
+        function updatePasswordOverlayLanguage() {
+            const lang = currentLanguage;
+            const titles = {
+                zh: '管理員訪問',
+                en: 'Administrator Access',
+                fr: 'Accès Administrateur',
+                it: 'Accesso Amministratore',
+                de: 'Administrator-Zugang'
+            };
+            const placeholders = {
+                zh: '請輸入密碼',
+                en: 'Enter Password',
+                fr: 'Entrez le mot de passe',
+                it: 'Inserisci Password',
+                de: 'Passwort eingeben'
+            };
+            const errors = {
+                zh: '密碼錯誤',
+                en: 'Incorrect password',
+                fr: 'Mot de passe incorrect',
+                it: 'Password errata',
+                de: 'Falsches Passwort'
+            };
+            
+            document.getElementById('passwordTitle').textContent = titles[lang];
+            document.getElementById('adminPassword').placeholder = placeholders[lang];
+            document.getElementById('passwordError').textContent = errors[lang];
+        }
+
+        // ===== 初始化 =====
+        function init() {
+            applyTheme(currentTheme);
+            updateCopyright();
+            changeLanguage(currentLanguage);
+            updateFilterOptions();
+        }
+
+        function updateCopyright() {
+            document.querySelector('.copyright').textContent = `© ${new Date().getFullYear()} ${ARTIST_INFO.copyright}. All rights reserved.`;
+        }
+
+        // ===== 页面导航 =====
+        function showLanding() {
+            document.getElementById('landingPage').style.display = 'flex';
+            document.getElementById('navbar').classList.remove('active');
+            document.getElementById('mainContainer').classList.remove('active');
+            document.getElementById('personalPage').classList.remove('active');
+            document.getElementById('galleryPage').classList.remove('active');
+            document.getElementById('footer').classList.remove('active');
+            document.getElementById('adminPanel').classList.remove('active');
+        }
+
+        function showPersonal() {
+            document.getElementById('landingPage').style.display = 'none';
+            document.getElementById('navbar').classList.add('active');
+            document.getElementById('mainContainer').classList.add('active');
+            document.getElementById('personalPage').classList.add('active');
+            document.getElementById('galleryPage').classList.remove('active');
+            document.getElementById('footer').classList.add('active');
+            document.getElementById('adminPanel').classList.remove('active');
+        }
+
+        function showGallery() {
+            document.getElementById('landingPage').style.display = 'none';
+            document.getElementById('navbar').classList.add('active');
+            document.getElementById('mainContainer').classList.add('active');
+            document.getElementById('personalPage').classList.remove('active');
+            document.getElementById('galleryPage').classList.add('active');
+            document.getElementById('footer').classList.add('active');
+            document.getElementById('adminPanel').classList.remove('active');
+            
+            displayArtworks();
+        }
+
+        // ===== 主题管理 =====
+        function toggleTheme() {
+            const customizer = document.getElementById('themeCustomizer');
+            customizer.classList.toggle('active');
+            
+            document.getElementById('bgPrimary').value = currentTheme.bgPrimary;
+            document.getElementById('accentColor').value = currentTheme.accentColor;
+            document.getElementById('cardBg').value = currentTheme.cardBg;
+            document.getElementById('textColor').value = currentTheme.textColor;
+        }
+
+        function updateTheme() {
+            const theme = {
+                bgPrimary: document.getElementById('bgPrimary').value,
+                accentColor: document.getElementById('accentColor').value,
+                cardBg: document.getElementById('cardBg').value,
+                textColor: document.getElementById('textColor').value
+            };
+            applyTheme(theme);
+        }
+
+        function applyTheme(theme) {
+            const root = document.documentElement;
+            root.style.setProperty('--bg-primary', theme.bgPrimary);
+            root.style.setProperty('--accent', theme.accentColor);
+            root.style.setProperty('--card-bg', theme.cardBg);
+            root.style.setProperty('--text-primary', theme.textColor);
+        }
+
+        function saveTheme() {
+            currentTheme = {
+                bgPrimary: document.getElementById('bgPrimary').value,
+                accentColor: document.getElementById('accentColor').value,
+                cardBg: document.getElementById('cardBg').value,
+                textColor: document.getElementById('textColor').value
+            };
+            
+            localStorage.setItem('tr_theme', JSON.stringify(currentTheme));
+            applyTheme(currentTheme);
+            document.getElementById('themeCustomizer').classList.remove('active');
+            
+            const messages = {
+                zh: '主題已儲存！',
+                en: 'Theme saved!',
+                fr: 'Thème enregistré!',
+                it: 'Tema salvato!',
+                de: 'Thema gespeichert!'
+            };
+            alert(messages[currentLanguage] || 'Theme saved!');
+        }
+
+        // ===== 管理画作 =====
+        function showAddForm() {
+            if (!isAdmin) {
+                const messages = {
+                    zh: '請先登入管理員帳戶',
+                    en: 'Please login as admin first',
+                    fr: 'Veuillez d\'abord vous connecter en tant qu\'admin',
+                    it: 'Accedi prima come amministratore',
+                    de: 'Bitte zuerst als Admin anmelden'
+                };
+                alert(messages[currentLanguage]);
+                return;
+            }
+            
+            document.getElementById('artworkForm').style.display = 'block';
+            document.getElementById('artworkId').value = '';
+            document.getElementById('artworkTitle').value = '';
+            document.getElementById('artworkType').value = '油畫';
+            document.getElementById('artworkCharacter').value = '';
+            document.getElementById('artworkPrice').value = '';
+            document.getElementById('artworkImage').value = '';
+            document.getElementById('imagePreview').style.display = 'none';
+        }
+
+        function cancelForm() {
+            document.getElementById('artworkForm').style.display = 'none';
+        }
+
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('artworkImage').value = e.target.result;
+                    document.getElementById('imagePreview').src = e.target.result;
+                    document.getElementById('imagePreview').style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function saveArtwork() {
+            if (!isAdmin) return;
+            
+            const id = document.getElementById('artworkId').value;
+            const artwork = {
+                id: id ? parseInt(id) : Date.now(),
+                title: document.getElementById('artworkTitle').value,
+                type: document.getElementById('artworkType').value,
+                character: document.getElementById('artworkCharacter').value,
+                price: parseFloat(document.getElementById('artworkPrice').value),
+                image: document.getElementById('artworkImage').value,
+                artist: ARTIST_INFO.name
+            };
+
+            if (!artwork.title || !artwork.price || !artwork.image) {
+                const messages = {
+                    zh: '請填寫畫作名稱、價格和上傳圖片',
+                    en: 'Please fill in title, price and upload image',
+                    fr: 'Veuillez remplir le titre, le prix et télécharger une image',
+                    it: 'Compila titolo, prezzo e carica immagine',
+                    de: 'Bitte Titel, Preis und Bild ausfüllen'
+                };
+                alert(messages[currentLanguage]);
+                return;
+            }
+
+            if (id) {
+                const index = artworks.findIndex(a => a.id === parseInt(id));
+                if (index !== -1) artworks[index] = artwork;
+            } else {
+                artworks.push(artwork);
+            }
+
+            localStorage.setItem('tr_artworks', JSON.stringify(artworks));
+            displayArtworks();
+            updateAdminList();
+            cancelForm();
+        }
+
+        function editArtwork(id) {
+            if (!isAdmin) return;
+            
+            const artwork = artworks.find(a => a.id === id);
+            if (!artwork) return;
+
+            document.getElementById('artworkForm').style.display = 'block';
+            document.getElementById('artworkId').value = artwork.id;
+            document.getElementById('artworkTitle').value = artwork.title;
+            document.getElementById('artworkType').value = artwork.type;
+            document.getElementById('artworkCharacter').value = artwork.character;
+            document.getElementById('artworkPrice').value = artwork.price;
+            document.getElementById('artworkImage').value = artwork.image;
+            
+            if (artwork.image) {
+                document.getElementById('imagePreview').src = artwork.image;
+                document.getElementById('imagePreview').style.display = 'block';
+            }
+        }
+
+        function deleteArtwork(id) {
+            if (!isAdmin) return;
+            
+            const messages = {
+                zh: '確定要刪除這幅畫作嗎？',
+                en: 'Are you sure you want to delete this artwork?',
+                fr: 'Êtes-vous sûr de vouloir supprimer cette œuvre?',
+                it: 'Sei sicuro di voler eliminare quest\'opera?',
+                de: 'Sind Sie sicher, dass Sie dieses Kunstwerk löschen möchten?'
+            };
+            
+            if (confirm(messages[currentLanguage])) {
+                artworks = artworks.filter(a => a.id !== id);
+                localStorage.setItem('tr_artworks', JSON.stringify(artworks));
+                displayArtworks();
+                updateAdminList();
+            }
+        }
+
+        function updateAdminList() {
+            if (!isAdmin) return;
+            
+            const container = document.getElementById('artworkList');
+            const titles = {
+                zh: '現有畫作列表',
+                en: 'Artwork List',
+                fr: 'Liste des Œuvres',
+                it: 'Elenco Opere',
+                de: 'Kunstwerkliste'
+            };
+            
+            container.innerHTML = `<h4 style="color: var(--accent); margin-bottom: 1rem;">${titles[currentLanguage]}</h4>`;
+            
+            artworks.forEach(artwork => {
+                const item = document.createElement('div');
+                item.style.cssText = `
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    padding: 1rem;
+                    border: 1px solid var(--border);
+                    margin-bottom: 0.5rem;
+                `;
+                item.innerHTML = `
+                    <div>
+                        <strong>${artwork.title}</strong> | ${artwork.type} | HK$${artwork.price}
+                    </div>
+                    <div>
+                        <button class="action-btn save-btn" style="padding: 0.3rem 1rem;" onclick="editArtwork(${artwork.id})">${translations[currentLanguage].form_save || 'Edit'}</button>
+                        <button class="action-btn cancel-btn" style="padding: 0.3rem 1rem;" onclick="deleteArtwork(${artwork.id})">${translations[currentLanguage].form_cancel || 'Delete'}</button>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        // ===== 显示画作 =====
+        function displayArtworks(filteredArtworks = null) {
+            const artworksToDisplay = filteredArtworks || artworks;
+            const grid = document.getElementById('artworksGrid');
+            grid.innerHTML = '';
+
+            if (artworksToDisplay.length === 0) {
+                grid.innerHTML = `<p style="text-align: center; color: var(--accent);">${translations[currentLanguage].no_artworks}</p>`;
+                return;
+            }
+
+            artworksToDisplay.forEach(artwork => {
+                const card = document.createElement('div');
+                card.className = 'artwork-card';
+                card.onclick = (e) => {
+                    if (!e.target.closest('button')) {
+                        showArtworkDetail(artwork);
+                    }
+                };
+                
+                card.innerHTML = `
+                    <img src="${artwork.image}" alt="${artwork.title}" class="artwork-image" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22300%22 height=%22300%22><rect fill=%22%23333%22 width=%22300%22 height=%22300%22/><text fill=%22%23fff%22 x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22>Error</text></svg>'>
+                    <div class="artwork-info">
+                        <h3 class="artwork-title">${artwork.title}</h3>
+                        <div class="artwork-meta">
+                            <div class="artwork-meta-item">
+                                <span class="artwork-meta-label">${translations[currentLanguage].modal_author}</span>
+                                <span class="artwork-meta-value">${artwork.artist}</span>
+                            </div>
+                            <div class="artwork-meta-item">
+                                <span class="artwork-meta-label">${translations[currentLanguage].modal_type}</span>
+                                <span class="artwork-meta-value">${artwork.type}</span>
+                            </div>
+                            <div class="artwork-meta-item">
+                                <span class="artwork-meta-label">${translations[currentLanguage].modal_character}</span>
+                                <span class="artwork-meta-value">${artwork.character || 'N/A'}</span>
+                            </div>
+                            <div class="artwork-meta-item">
+                                <span class="artwork-meta-label">${translations[currentLanguage].modal_price}</span>
+                                <span class="artwork-meta-value">HK$${artwork.price.toFixed(2)}</span>
+                            </div>
+                        </div>
+                        <div class="artwork-price">HK$${artwork.price.toFixed(2)}</div>
+                        <button class="buy-btn" onclick="event.stopPropagation(); buyArtwork(${artwork.id})">${translations[currentLanguage].buy_btn}</button>
+                        <button class="inquiry-btn" onclick="event.stopPropagation(); inquireArtwork(${artwork.id})">${translations[currentLanguage].inquiry_btn}</button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function filterArtworks() {
+            const type = document.getElementById('typeFilter').value;
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            
+            let filtered = artworks;
+            
+            if (type !== 'all') {
+                filtered = filtered.filter(a => a.type === type);
+            }
+            
+            if (search) {
+                filtered = filtered.filter(a => 
+                    a.title.toLowerCase().includes(search) ||
+                    a.character.toLowerCase().includes(search) ||
+                    a.type.toLowerCase().includes(search)
+                );
+            }
+            
+            displayArtworks(filtered);
+        }
+
+        function showArtworkDetail(artwork) {
+            const modal = document.getElementById('artworkModal');
+            const content = document.getElementById('modalContent');
+            
+            content.innerHTML = `
+                <img src="${artwork.image}" style="width: 100%; max-height: 500px; object-fit: contain;" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22300%22 height=%22300%22><rect fill=%22%23333%22 width=%22300%22 height=%22300%22/></svg>">
+                <h2 style="color: var(--accent); margin-top: 1.5rem;">${artwork.title}</h2>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1.5rem 0;">
+                    <div><strong>${translations[currentLanguage].modal_author}：</strong>${artwork.artist}</div>
+                    <div><strong>${translations[currentLanguage].modal_type}：</strong>${artwork.type}</div>
+                    <div><strong>${translations[currentLanguage].modal_character}：</strong>${artwork.character || 'N/A'}</div>
+                    <div><strong>${translations[currentLanguage].modal_price}：</strong><span style="color: var(--price-color); font-size: 1.5rem;">HK$${artwork.price.toFixed(2)}</span></div>
+                </div>
+                <div style="margin-top: 1.5rem;">
+                    <button class="buy-btn" onclick="buyArtwork(${artwork.id})">${translations[currentLanguage].buy_btn}</button>
+                    <button class="inquiry-btn" onclick="inquireArtwork(${artwork.id})">${translations[currentLanguage].inquiry_btn}</button>
+                </div>
+            `;
+            
+            modal.classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('artworkModal').classList.remove('active');
+        }
+
+        function buyArtwork(id) {
+            const artwork = artworks.find(a => a.id === id);
+            if (artwork) {
+                const messages = {
+                    zh: `感謝您對「${artwork.title}」的購買意向！\n\n價格：HK$${artwork.price.toFixed(2)}\n\n我們將盡快通過電郵與您聯繫。`,
+                    en: `Thank you for your interest in "${artwork.title}"!\n\nPrice: HK$${artwork.price.toFixed(2)}\n\nWe will contact you via email shortly.`,
+                    fr: `Merci de votre intérêt pour "${artwork.title}"!\n\nPrix: HK$${artwork.price.toFixed(2)}\n\nNous vous contacterons par email.`,
+                    it: `Grazie per l'interesse in "${artwork.title}"!\n\nPrezzo: HK$${artwork.price.toFixed(2)}\n\nTi contatteremo via email.`,
+                    de: `Vielen Dank für Ihr Interesse an "${artwork.title}"!\n\nPreis: HK$${artwork.price.toFixed(2)}\n\nWir werden Sie per E-Mail kontaktieren.`
+                };
+                alert(messages[currentLanguage]);
+            }
+        }
+
+        function inquireArtwork(id) {
+            const artwork = artworks.find(a => a.id === id);
+            if (artwork) {
+                const messages = {
+                    zh: `關於「${artwork.title}」的諮詢\n\n請發送電郵至：trismeg.rosea@art.com\n\n畫作詳情：\n- 作者：${artwork.artist}\n- 類型：${artwork.type}\n- 角色：${artwork.character || '無'}\n- 價格：HK$${artwork.price.toFixed(2)}`,
+                    en: `Inquiry about "${artwork.title}"\n\nPlease email: trismeg.rosea@art.com\n\nDetails:\n- Author: ${artwork.artist}\n- Type: ${artwork.type}\n- Character: ${artwork.character || 'N/A'}\n- Price: HK$${artwork.price.toFixed(2)}`,
+                    fr: `Demande concernant "${artwork.title}"\n\nEmail: trismeg.rosea@art.com\n\nDétails:\n- Auteur: ${artwork.artist}\n- Type: ${artwork.type}\n- Personnage: ${artwork.character || 'N/A'}\n- Prix: HK$${artwork.price.toFixed(2)}`,
+                    it: `Richiesta su "${artwork.title}"\n\nEmail: trismeg.rosea@art.com\n\nDettagli:\n- Autore: ${artwork.artist}\n- Tipo: ${artwork.type}\n- Personaggio: ${artwork.character || 'N/A'}\n- Prezzo: HK$${artwork.price.toFixed(2)}`,
+                    de: `Anfrage zu "${artwork.title}"\n\nE-Mail: trismeg.rosea@art.com\n\nDetails:\n- Autor: ${artwork.artist}\n- Typ: ${artwork.type}\n- Charakter: ${artwork.character || 'N/A'}\n- Preis: HK$${artwork.price.toFixed(2)}`
+                };
+                alert(messages[currentLanguage]);
+            }
+        }
+
+        // ===== 事件监听 =====
+        window.onclick = function(event) {
+            const modal = document.getElementById('artworkModal');
+            if (event.target === modal) closeModal();
+        };
+
+        // ===== 初始化 =====
+        init();
+        showLanding();
+    </script>
+</body>
+</html>
